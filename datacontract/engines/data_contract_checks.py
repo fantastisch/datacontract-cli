@@ -1,6 +1,7 @@
 import re
 import uuid
 from dataclasses import dataclass
+from enum import Enum
 from typing import List, Optional
 from venv import logger
 
@@ -23,6 +24,14 @@ class QuotingConfig:
     quote_field_name_with_backticks: bool = False
     quote_model_name: bool = False
     quote_model_name_with_backticks: bool = False
+
+
+class CheckType(str, Enum): #TODO a class CheckType already exists in another package. Consider renaming
+    lint = "lint"
+    schema = "schema"
+    quality = "quality"
+    sla = "sla"
+    all = "all"
 
 
 def _escape_sql_string_values(values):

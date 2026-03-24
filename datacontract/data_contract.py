@@ -25,6 +25,7 @@ class DataContract:
         data_contract_str: str = None,
         data_contract: OpenDataContractStandard = None,
         schema_location: str = None,
+        checks: str = None,
         server: str = None,
         publish_url: str = None,
         spark: "SparkSession" = None,
@@ -37,6 +38,7 @@ class DataContract:
         self._data_contract_str = data_contract_str
         self._data_contract = data_contract
         self._schema_location = schema_location
+        self._checks = checks
         self._server = server
         self._publish_url = publish_url
         self._publish_test_results = publish_test_results
@@ -103,7 +105,7 @@ class DataContract:
                 inline_definitions=self._inline_definitions,
             )
 
-            execute_data_contract_test(data_contract, run, self._server, self._spark, self._duckdb_connection)
+            execute_data_contract_test(data_contract, run, self._checks, self._server, self._spark, self._duckdb_connection)
 
         except DataContractException as e:
             run.checks.append(

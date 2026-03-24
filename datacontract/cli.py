@@ -13,6 +13,7 @@ from typing_extensions import Annotated
 
 from datacontract.catalog.catalog import create_data_contract_html, create_index_html
 from datacontract.data_contract import DataContract, ExportFormat
+from datacontract.engines.data_contract_checks import CheckType
 from datacontract.imports.importer import ImportFormat
 from datacontract.init.init_template import get_init_template
 from datacontract.integration.entropy_data import (
@@ -135,6 +136,13 @@ def test(
         str,
         typer.Option(help="The location (url or path) of the ODCS JSON Schema"),
     ] = None,
+    checks: Annotated[
+        CheckType,
+        typer.Option(
+            help="The types of checks to run. "
+            "Use `schema` to run only schema checks, `quality` to run only quality checks, or `all` to run all checks."
+        ),
+    ] = CheckType.all,
     server: Annotated[
         str,
         typer.Option(
@@ -168,6 +176,8 @@ def test(
     enable_debug_logging(debug)
 
     console.print(f"Testing {location}")
+    if checks == "all":
+        checks = None
     if server == "all":
         server = None
     run = DataContract(
@@ -175,6 +185,7 @@ def test(
         schema_location=schema,
         publish_test_results=publish_test_results,
         publish_url=publish,
+        checks=checks,
         server=server,
         ssl_verification=ssl_verification,
     ).test()
