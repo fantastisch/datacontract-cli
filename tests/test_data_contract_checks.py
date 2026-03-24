@@ -1,6 +1,7 @@
 import yaml
 from open_data_contract_standard.model import DataQuality, Server
 
+from datacontract.data_contract import DataContract
 from datacontract.engines.data_contract_checks import (
     QuotingConfig,
     _escape_sql_string_values,
@@ -13,6 +14,7 @@ from datacontract.engines.data_contract_checks import (
     check_property_type,
     check_property_unique,
     prepare_query,
+    to_schema_checks,
 )
 
 
@@ -225,6 +227,45 @@ def test_check_property_is_present_duckdb_hyphenated_model_name():
     checks = impl['checks for "test-1"']
     schema_check = checks[0]["schema"]
     assert schema_check["fail"]["when required column missing"] == ["name"]
+
+
+def test_field_and_model_names_have_backticks_in_quality_bigquery():
+    """Test that field and model names are encapsulated with backticks for BigQuery servers in quality checks"""
+    data_contract = DataContract(data_contract_file="fixtures/bigquery/datacontract_with_quality_rules.odcs.yaml")
+    checks = to_schema_checks(
+        schema_object=data_contract.get_data_contract().schema_[0],
+        server=Server(type="bigquery"),
+    )
+    quality_check = [check for check in checks if check.category == "quality"][0]
+    impl = yaml.safe_load(quality_check.implementation)
+    checks = impl["checks for `test_table`"]
+    check_name = checks[0]["duplicate_count(`field_with_quality_rules`) = 0"]["name"]
+    assert "test_table__field_with_quality_rules__field_duplicate_values" == check_name
+
+
+def test_prepare_query_schema_placeholder_backticks_databricks():
+    """Test that {schema} and {model} placeholders use backticks for databricks."""
+    quality = DataQuality(type="sql", query="SELECT * FROM {schema}.{model}")
+    server = Server(**{"type": "databricks", "schema": "my_schema"})
+    quoting_config = QuotingConfig(quote_model_name_with_backticks=True)
+
+    result = prepare_query(quality, "my_table", None, quoting_config, server)
+
+    assert result == "SELECT * FROM `my_schema`.`my_table`"
+
+
+def test_field_and_model_names_have_backticks_in_quality_databricks():
+    """Test that field and model names are encapsulated with backticks for Databricks servers in quality checks."""
+    data_contract = DataContract(data_contract_file="fixtures/bigquery/datacontract_with_quality_rules.odcs.yaml")
+    checks = to_schema_checks(
+        schema_object=data_contract.get_data_contract().schema_[0],
+        server=Server(type="databricks"),
+    )
+    quality_check = [check for check in checks if check.category == "quality"][0]
+    impl = yaml.safe_load(quality_check.implementation)
+    checks = impl["checks for `test_table`"]
+    check_name = checks[0]["duplicate_count(`field_with_quality_rules`) = 0"]["name"]
+    assert "test_table__field_with_quality_rules__field_duplicate_values" == check_name
 
 
 # --- Tests for single-quote escaping in SodaCL checks (issue #980) ---
