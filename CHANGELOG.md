@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix SQL importer type mappings: binary types, datetime/time, uuid now map to correct ODCS logicalType and format (#790)
 
 ### Added
-- Add `--checks` argument to `test` command, to select check types (#678)
+- Select check types with `--checks` argument (#678)
 - Support additional PyArrow types in Parquet importer (#1091)
 - Populate `logicalTypeOptions.format` for SQL import from binary and uuid types (#790)
 - Snowflake DDL import with tags, descriptions, and template variable handling (#790)
