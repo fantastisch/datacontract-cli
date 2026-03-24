@@ -159,12 +159,12 @@ def test(
         typer.Option(help="The location (url or path) of the ODCS JSON Schema"),
     ] = None,
     checks: Annotated[
-        CheckType,
+        List[CheckType],
         typer.Option(
             help="The types of checks to run. "
             "Use `schema` to run only schema checks, `quality` to run only quality checks, or `all` to run all checks."
         ),
-    ] = CheckType.all,
+    ] = None,
     server: Annotated[
         str,
         typer.Option(
@@ -198,10 +198,11 @@ def test(
     enable_debug_logging(debug)
 
     console.print(f"Testing {location}")
-    if checks == "all":
-        checks = None
+    if checks is None or len(checks) == 0:
+        checks = [CheckType.all]
     if server == "all":
         server = None
+
     run = DataContract(
         data_contract_file=location,
         schema_location=schema,

@@ -1,7 +1,10 @@
 import logging
 import typing
+from typing import List
 
 from open_data_contract_standard.model import OpenDataContractStandard, Team
+
+from datacontract.engines.data_contract_checks import CheckType
 
 if typing.TYPE_CHECKING:
     from duckdb.duckdb import DuckDBPyConnection
@@ -26,7 +29,7 @@ class DataContract:
         data_contract_str: str = None,
         data_contract: OpenDataContractStandard = None,
         schema_location: str = None,
-        checks: str = None,
+        checks: List[CheckType] = None,
         server: str = None,
         publish_url: str = None,
         spark: "SparkSession" = None,
