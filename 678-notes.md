@@ -64,6 +64,10 @@ It seems this file contains a large number of types, consistently assigned to th
 It makes sense to move these types into en enum, that we can filter on.
 The types can then be added to a `check_type_group`, which is used as argument.
 
+## Implementation
+
+* Create 2 enums: `CheckType` and `CheckTypeGroup`
+
 ## Testing
 
 ### Running tests
