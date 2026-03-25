@@ -26,12 +26,25 @@ class QuotingConfig:
     quote_model_name_with_backticks: bool = False
 
 
-class CheckType(str, Enum): #TODO a class CheckType already exists in another package. Consider renaming
+class CheckTypeGroup(str, Enum): #TODO a class called CheckType already exists in another package. Consider renaming
     lint = "lint"
     schema = "schema"
     quality = "quality"
-    sla = "sla"
+    servicelevel = "sla"
     all = "all"
+
+class CheckType(Enum): #TODO migrate all check_type to this enum
+
+    FIELD_TYPE = ("field_type", CheckTypeGroup.schema)
+    FIELD_IS_PRESENT = ("field_is_present", CheckTypeGroup.schema)
+
+    SERVICELEVEL_RETENTION = ("servicelevel_retention", CheckTypeGroup.servicelevel)
+
+    def __new__(cls, check_type: str, group: CheckTypeGroup):
+        obj = object.__new__(cls)
+        obj._value_ = check_type
+        obj.group = group
+        return obj
 
 
 def _escape_sql_string_values(values):
@@ -172,10 +185,10 @@ def to_schema_checks(schema_object: SchemaObject, server: Server) -> List[Check]
     return checks
 
 
-def checks_for(model_name: str, quoting_config: QuotingConfig, check_type: str) -> str:
+def checks_for(model_name: str, quoting_config: QuotingConfig, check_type: CheckType) -> str:
     if quoting_config.quote_model_name:
         return f'checks for "{model_name}"'
-    elif quoting_config.quote_model_name_with_backticks and check_type not in ["field_is_present", "field_type"]:
+    elif quoting_config.quote_model_name_with_backticks and check_type not in [CheckType.FIELD_IS_PRESENT, CheckType.FIELD_TYPE]:
         return f"checks for `{model_name}`"
     return f"checks for {model_name}"
 
@@ -200,7 +213,7 @@ def to_schema_name(schema_object: SchemaObject, server_type: str) -> str:
 
 
 def check_property_is_present(model_name, field_name, quoting_config: QuotingConfig = QuotingConfig()) -> Check:
-    check_type = "field_is_present"
+    check_type = CheckType.FIELD_IS_PRESENT
     check_key = f"{model_name}__{field_name}__{check_type}"
     sodacl_check_dict = {
         checks_for(model_name, quoting_config, check_type): [
@@ -231,7 +244,7 @@ def check_property_is_present(model_name, field_name, quoting_config: QuotingCon
 def check_property_type(
     model_name: str, field_name: str, expected_type: str, quoting_config: QuotingConfig = QuotingConfig()
 ):
-    check_type = "field_type"
+    check_type = CheckType.FIELD_TYPE
     check_key = f"{model_name}__{field_name}__{check_type}"
     sodacl_check_dict = {
         checks_for(model_name, quoting_config, check_type): [
@@ -1057,7 +1070,7 @@ def to_servicelevel_retention_check(data_contract: OpenDataContractStandard, sla
         logger.info(f"Could not parse retention period (value={sla.value}, unit={sla.unit}), skipping retention check")
         return None
 
-    check_type = "servicelevel_retention"
+    check_type = CheckType.SERVICELEVEL_RETENTION
     check_key = "servicelevel_retention"
     sodacl_check_dict = {
         f"checks for {model_name}": [

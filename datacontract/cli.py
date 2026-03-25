@@ -14,7 +14,7 @@ from typing_extensions import Annotated
 
 from datacontract.catalog.catalog import create_data_contract_html, create_index_html
 from datacontract.data_contract import DataContract, ExportFormat
-from datacontract.engines.data_contract_checks import CheckType
+from datacontract.engines.data_contract_checks import CheckTypeGroup
 from datacontract.imports.importer import ImportFormat
 from datacontract.init.init_template import get_init_template
 from datacontract.integration.entropy_data import (
@@ -159,7 +159,7 @@ def test(
         typer.Option(help="The location (url or path) of the ODCS JSON Schema"),
     ] = None,
     checks: Annotated[
-        List[CheckType],
+        List[CheckTypeGroup],
         typer.Option(
             help="The types of checks to run. "
             "Use `schema` to run only schema checks, `quality` to run only quality checks, or `all` to run all checks."
@@ -199,7 +199,7 @@ def test(
 
     console.print(f"Testing {location}")
     if checks is None or len(checks) == 0:
-        checks = [CheckType.all]
+        checks = [CheckTypeGroup.all]
     if server == "all":
         server = None
 
