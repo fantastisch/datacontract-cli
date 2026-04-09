@@ -37,7 +37,29 @@ class CheckType(Enum): #TODO migrate all check_type to this enum
 
     FIELD_TYPE = ("field_type", CheckTypeGroup.schema)
     FIELD_IS_PRESENT = ("field_is_present", CheckTypeGroup.schema)
+    FIELD_REQUIRED = ("field_required", CheckTypeGroup.schema)
+    FIELD_NULL_VALUES = ("field_null_values", CheckTypeGroup.quality)
+    FIELD_UNIQUE = ("field_unique", CheckTypeGroup.schema)
 
+    FIELD_ENUM = ("field_enum", CheckTypeGroup.schema)
+    FIELD_DUPLICATE_VALUES = ("field_duplicate_values", CheckTypeGroup.quality)
+    FIELD_INVALID_VALUES = ("field_invalid_values", CheckTypeGroup.quality)
+    FIELD_MISSING_VALUES = ("field_missing_values", CheckTypeGroup.quality)
+    FIELD_NOT_EQUAL = ("field_not_equal", CheckTypeGroup.schema)
+    FIELD_MAX_LENGTH = ("field_max_length", CheckTypeGroup.schema)
+    FIELD_MIN_LENGTH = ("field_min_length", CheckTypeGroup.schema)
+    FIELD_MAXIMUM = ("field_maximum", CheckTypeGroup.schema)
+    FIELD_MINIMUM = ("field_minimum", CheckTypeGroup.schema)
+    FIELD_REGEX = ("field_regex", CheckTypeGroup.schema)
+    FIELD_QUALITY_SQL = ("field_quality_sql", CheckTypeGroup.quality)
+
+    MODEL_DUPLICATE_VALUES = ("model_duplicate_values", CheckTypeGroup.quality)
+    MODEL_QUALITY_SQL = ("model_quality_sql", CheckTypeGroup.quality)
+    ROW_COUNT = ("row_count", CheckTypeGroup.schema)
+
+    QUALITY_CUSTOM_SODA = ("quality_custom_soda", CheckTypeGroup.quality)
+
+    SERVICELEVEL_FRESHNESS = ("servicelevel_freshness", CheckTypeGroup.servicelevel)
     SERVICELEVEL_RETENTION = ("servicelevel_retention", CheckTypeGroup.servicelevel)
 
     def __new__(cls, check_type: str, group: CheckTypeGroup):
@@ -214,7 +236,7 @@ def to_schema_name(schema_object: SchemaObject, server_type: str) -> str:
 
 def check_property_is_present(model_name, field_name, quoting_config: QuotingConfig = QuotingConfig()) -> Check:
     check_type = CheckType.FIELD_IS_PRESENT
-    check_key = f"{model_name}__{field_name}__{check_type}"
+    check_key = f"{model_name}__{field_name}__{check_type.value}"
     sodacl_check_dict = {
         checks_for(model_name, quoting_config, check_type): [
             {
@@ -231,7 +253,7 @@ def check_property_is_present(model_name, field_name, quoting_config: QuotingCon
         id=str(uuid.uuid4()),
         key=check_key,
         category="schema",
-        type=check_type,
+        type=check_type.value,
         name=f"Check that field '{field_name}' is present",
         model=model_name,
         field=field_name,
@@ -245,7 +267,7 @@ def check_property_type(
     model_name: str, field_name: str, expected_type: str, quoting_config: QuotingConfig = QuotingConfig()
 ):
     check_type = CheckType.FIELD_TYPE
-    check_key = f"{model_name}__{field_name}__{check_type}"
+    check_key = f"{model_name}__{field_name}__{check_type.value}"
     sodacl_check_dict = {
         checks_for(model_name, quoting_config, check_type): [
             {
@@ -264,7 +286,7 @@ def check_property_type(
         id=str(uuid.uuid4()),
         key=check_key,
         category="schema",
-        type=check_type,
+        type=check_type.value,
         name=f"Check that field {field_name} has type {expected_type}",
         model=model_name,
         field=field_name,
@@ -277,8 +299,8 @@ def check_property_type(
 def check_property_required(model_name: str, field_name: str, quoting_config: QuotingConfig = QuotingConfig()):
     field_name_for_soda = _quote_field_name(field_name, quoting_config)
 
-    check_type = "field_required"
-    check_key = f"{model_name}__{field_name}__{check_type}"
+    check_type = CheckType.FIELD_REQUIRED
+    check_key = f"{model_name}__{field_name}__{check_type.value}"
     sodacl_check_dict = {
         checks_for(model_name, quoting_config, check_type): [
             {
@@ -292,7 +314,7 @@ def check_property_required(model_name: str, field_name: str, quoting_config: Qu
         id=str(uuid.uuid4()),
         key=check_key,
         category="schema",
-        type=check_type,
+        type=check_type.value,
         name=f"Check that field {field_name} has no missing values",
         model=model_name,
         field=field_name,
@@ -305,8 +327,8 @@ def check_property_required(model_name: str, field_name: str, quoting_config: Qu
 def check_property_unique(model_name: str, field_name: str, quoting_config: QuotingConfig = QuotingConfig()):
     field_name_for_soda = _quote_field_name(field_name, quoting_config)
 
-    check_type = "field_unique"
-    check_key = f"{model_name}__{field_name}__{check_type}"
+    check_type = CheckType.FIELD_UNIQUE
+    check_key = f"{model_name}__{field_name}__{check_type.value}"
     sodacl_check_dict = {
         checks_for(model_name, quoting_config, check_type): [
             {
@@ -320,7 +342,7 @@ def check_property_unique(model_name: str, field_name: str, quoting_config: Quot
         id=str(uuid.uuid4()),
         key=check_key,
         category="schema",
-        type=check_type,
+        type=check_type.value,
         name=f"Check that unique field {field_name} has no duplicate values",
         model=model_name,
         field=field_name,
@@ -335,8 +357,8 @@ def check_property_min_length(
 ):
     field_name_for_soda = _quote_field_name(field_name, quoting_config)
 
-    check_type = "field_min_length"
-    check_key = f"{model_name}__{field_name}__{check_type}"
+    check_type = CheckType.FIELD_MIN_LENGTH.value
+    check_key = f"{model_name}__{field_name}__{check_type.value}"
     sodacl_check_dict = {
         checks_for(model_name, quoting_config, check_type): [
             {
@@ -351,7 +373,7 @@ def check_property_min_length(
         id=str(uuid.uuid4()),
         key=check_key,
         category="schema",
-        type=check_type,
+        type=check_type.value,
         name=f"Check that field {field_name} has a min length of {min_length}",
         model=model_name,
         field=field_name,
@@ -366,8 +388,8 @@ def check_property_max_length(
 ):
     field_name_for_soda = _quote_field_name(field_name, quoting_config)
 
-    check_type = "field_max_length"
-    check_key = f"{model_name}__{field_name}__{check_type}"
+    check_type = CheckType.FIELD_MAX_LENGTH
+    check_key = f"{model_name}__{field_name}__{check_type.value}"
     sodacl_check_dict = {
         checks_for(model_name, quoting_config, check_type): [
             {
@@ -382,7 +404,7 @@ def check_property_max_length(
         id=str(uuid.uuid4()),
         key=check_key,
         category="schema",
-        type=check_type,
+        type=check_type.value,
         name=f"Check that field {field_name} has a max length of {max_length}",
         model=model_name,
         field=field_name,
@@ -397,8 +419,8 @@ def check_property_minimum(
 ):
     field_name_for_soda = _quote_field_name(field_name, quoting_config)
 
-    check_type = "field_minimum"
-    check_key = f"{model_name}__{field_name}__{check_type}"
+    check_type = CheckType.FIELD_MINIMUM
+    check_key = f"{model_name}__{field_name}__{check_type.value}"
     sodacl_check_dict = {
         checks_for(model_name, quoting_config, check_type): [
             {
@@ -413,7 +435,7 @@ def check_property_minimum(
         id=str(uuid.uuid4()),
         key=check_key,
         category="schema",
-        type=check_type,
+        type=check_type.value,
         name=f"Check that field {field_name} has a minimum of {minimum}",
         model=model_name,
         field=field_name,
@@ -428,8 +450,8 @@ def check_property_maximum(
 ):
     field_name_for_soda = _quote_field_name(field_name, quoting_config)
 
-    check_type = "field_maximum"
-    check_key = f"{model_name}__{field_name}__{check_type}"
+    check_type = CheckType.FIELD_MAXIMUM
+    check_key = f"{model_name}__{field_name}__{check_type.value}"
     sodacl_check_dict = {
         checks_for(model_name, quoting_config, check_type): [
             {
@@ -444,7 +466,7 @@ def check_property_maximum(
         id=str(uuid.uuid4()),
         key=check_key,
         category="schema",
-        type=check_type,
+        type=check_type.value,
         name=f"Check that field {field_name} has a maximum of {maximum}",
         model=model_name,
         field=field_name,
@@ -459,8 +481,8 @@ def check_property_not_equal(
 ):
     field_name_for_soda = _quote_field_name(field_name, quoting_config)
 
-    check_type = "field_not_equal"
-    check_key = f"{model_name}__{field_name}__{check_type}"
+    check_type = CheckType.FIELD_NOT_EQUAL
+    check_key = f"{model_name}__{field_name}__{check_type.value}"
     sodacl_check_dict = {
         checks_for(model_name, quoting_config, check_type): [
             {
@@ -475,7 +497,7 @@ def check_property_not_equal(
         id=str(uuid.uuid4()),
         key=check_key,
         category="schema",
-        type=check_type,
+        type=check_type.value,
         name=f"Check that field {field_name} is not equal to {value}",
         model=model_name,
         field=field_name,
@@ -488,8 +510,8 @@ def check_property_not_equal(
 def check_property_enum(model_name: str, field_name: str, enum: list, quoting_config: QuotingConfig = QuotingConfig()):
     field_name_for_soda = _quote_field_name(field_name, quoting_config)
 
-    check_type = "field_enum"
-    check_key = f"{model_name}__{field_name}__{check_type}"
+    check_type = CheckType.FIELD_ENUM
+    check_key = f"{model_name}__{field_name}__{check_type.value}"
     sodacl_check_dict = {
         checks_for(model_name, quoting_config, check_type): [
             {
@@ -504,7 +526,7 @@ def check_property_enum(model_name: str, field_name: str, enum: list, quoting_co
         id=str(uuid.uuid4()),
         key=check_key,
         category="schema",
-        type=check_type,
+        type=check_type.value,
         name=f"Check that field {field_name} only contains enum values {enum}",
         model=model_name,
         field=field_name,
@@ -519,8 +541,8 @@ def check_property_regex(
 ):
     field_name_for_soda = _quote_field_name(field_name, quoting_config)
 
-    check_type = "field_regex"
-    check_key = f"{model_name}__{field_name}__{check_type}"
+    check_type = CheckType.FIELD_REGEX
+    check_key = f"{model_name}__{field_name}__{check_type.value}"
     sodacl_check_dict = {
         checks_for(model_name, quoting_config, check_type): [
             {
@@ -535,7 +557,7 @@ def check_property_regex(
         id=str(uuid.uuid4()),
         key=check_key,
         category="schema",
-        type=check_type,
+        type=check_type.value,
         name=f"Check that field {field_name} matches regex pattern {pattern}",
         model=model_name,
         field=field_name,
@@ -546,8 +568,8 @@ def check_property_regex(
 
 
 def check_row_count(model_name: str, threshold: str, quoting_config: QuotingConfig = QuotingConfig()):
-    check_type = "row_count"
-    check_key = f"{model_name}__{check_type}"
+    check_type = CheckType.ROW_COUNT
+    check_key = f"{model_name}__{check_type.value}"
     sodacl_check_dict = {
         checks_for(model_name, quoting_config, check_type): [
             {
@@ -559,7 +581,7 @@ def check_row_count(model_name: str, threshold: str, quoting_config: QuotingConf
         id=str(uuid.uuid4()),
         key=check_key,
         category="schema",
-        type=check_type,
+        type=check_type.value,
         name=f"Check that model {model_name} has row_count {threshold}",
         model=model_name,
         field=None,
@@ -572,8 +594,8 @@ def check_row_count(model_name: str, threshold: str, quoting_config: QuotingConf
 def check_model_duplicate_values(
     model_name: str, cols: list[str], threshold: str, quoting_config: QuotingConfig = QuotingConfig()
 ):
-    check_type = "model_duplicate_values"
-    check_key = f"{model_name}__{check_type}"
+    check_type = CheckType.MODEL_DUPLICATE_VALUES
+    check_key = f"{model_name}__{check_type.value}"
     col_joined = ", ".join(_quote_field_name(col, quoting_config) for col in cols)
     sodacl_check_dict = {
         checks_for(model_name, quoting_config, check_type): [
@@ -586,7 +608,7 @@ def check_model_duplicate_values(
         id=str(uuid.uuid4()),
         key=check_key,
         category="quality",
-        type=check_type,
+        type=check_type.value,
         name=f"Check that model {model_name} has duplicate_count {threshold} for columns {col_joined}",
         model=model_name,
         field=None,
@@ -601,8 +623,8 @@ def check_property_duplicate_values(
 ):
     field_name_for_soda = _quote_field_name(field_name, quoting_config)
 
-    check_type = "field_duplicate_values"
-    check_key = f"{model_name}__{field_name}__{check_type}"
+    check_type = CheckType.FIELD_DUPLICATE_VALUES
+    check_key = f"{model_name}__{field_name}__{check_type.value}"
     sodacl_check_dict = {
         checks_for(model_name, quoting_config, check_type): [
             {
@@ -616,7 +638,7 @@ def check_property_duplicate_values(
         id=str(uuid.uuid4()),
         key=check_key,
         category="quality",
-        type=check_type,
+        type=check_type.value,
         name=f"Check that field {field_name} has duplicate_count {threshold}",
         model=model_name,
         field=field_name,
@@ -631,8 +653,8 @@ def check_property_null_values(
 ):
     field_name_for_soda = _quote_field_name(field_name, quoting_config)
 
-    check_type = "field_null_values"
-    check_key = f"{model_name}__{field_name}__{check_type}"
+    check_type = CheckType.FIELD_NULL_VALUES
+    check_key = f"{model_name}__{field_name}__{check_type.value}"
     sodacl_check_dict = {
         checks_for(model_name, quoting_config, check_type): [
             {
@@ -646,7 +668,7 @@ def check_property_null_values(
         id=str(uuid.uuid4()),
         key=check_key,
         category="quality",
-        type=check_type,
+        type=check_type.value,
         name=f"Check that field {field_name} has missing_count {threshold}",
         model=model_name,
         field=field_name,
@@ -665,8 +687,8 @@ def check_property_invalid_values(
 ):
     field_name_for_soda = _quote_field_name(field_name, quoting_config)
 
-    check_type = "field_invalid_values"
-    check_key = f"{model_name}__{field_name}__{check_type}"
+    check_type = CheckType.FIELD_INVALID_VALUES
+    check_key = f"{model_name}__{field_name}__{check_type.value}"
 
     sodacl_check_config = {
         "name": check_key,
@@ -686,7 +708,7 @@ def check_property_invalid_values(
         id=str(uuid.uuid4()),
         key=check_key,
         category="quality",
-        type=check_type,
+        type=check_type.value,
         name=f"Check that field {field_name} has invalid_count {threshold}",
         model=model_name,
         field=field_name,
@@ -705,8 +727,8 @@ def check_property_missing_values(
 ):
     field_name_for_soda = _quote_field_name(field_name, quoting_config)
 
-    check_type = "field_missing_values"
-    check_key = f"{model_name}__{field_name}__{check_type}"
+    check_type = CheckType.FIELD_MISSING_VALUES
+    check_key = f"{model_name}__{field_name}__{check_type.value}"
 
     sodacl_check_config = {
         "name": check_key,
@@ -728,7 +750,7 @@ def check_property_missing_values(
         id=str(uuid.uuid4()),
         key=check_key,
         category="quality",
-        type=check_type,
+        type=check_type.value,
         name=f"Check that field {field_name} has missing_count {threshold}",
         model=model_name,
         field=field_name,
@@ -752,13 +774,13 @@ def check_quality_list(
         if quality.type == "custom" and quality.engine == "soda" and quality.implementation:
             # Custom SodaCL quality check with raw implementation
             check_key = f"{schema_name}__quality_custom_{count}"
-            check_type = "quality_custom_soda"
+            check_type = CheckType.QUALITY_CUSTOM_SODA
             checks.append(
                 Check(
                     id=str(uuid.uuid4()),
                     key=check_key,
                     category="quality",
-                    type=check_type,
+                    type=check_type.value,
                     name=quality.description if quality.description is not None else "Custom SodaCL Check",
                     model=schema_name,
                     field=property_name,
@@ -770,10 +792,10 @@ def check_quality_list(
         elif quality.type == "sql":
             if property_name is None:
                 check_key = f"{schema_name}__quality_sql_{count}"
-                check_type = "field_quality_sql"
+                check_type = CheckType.FIELD_QUALITY_SQL
             else:
                 check_key = f"{schema_name}__{property_name}__quality_sql_{count}"
-                check_type = "model_quality_sql"
+                check_type = CheckType.MODEL_QUALITY_SQL
             threshold = to_sodacl_threshold(quality)
             query = prepare_query(quality, schema_name, property_name, quoting_config, server)
             if query is None:
@@ -802,7 +824,7 @@ def check_quality_list(
                     id=str(uuid.uuid4()),
                     key=check_key,
                     category="quality",
-                    type=check_type,
+                    type=check_type.value,
                     name=quality.description if quality.description is not None else "Quality Check",
                     model=schema_name,
                     field=property_name,
@@ -1008,7 +1030,7 @@ def to_sla_freshness_check(data_contract: OpenDataContractStandard, sla) -> Chec
         logger.info(f"Unsupported unit {unit} for freshness check, must be days, hours, or minutes")
         return None
 
-    check_type = "servicelevel_freshness"
+    check_type = CheckType.SERVICELEVEL_FRESHNESS
     check_key = "servicelevel_freshness"
     sodacl_check_dict = {
         f"checks for {model_name}": [
@@ -1023,7 +1045,7 @@ def to_sla_freshness_check(data_contract: OpenDataContractStandard, sla) -> Chec
         id=str(uuid.uuid4()),
         key=check_key,
         category="servicelevel",
-        type=check_type,
+        type=check_type.value,
         name=f"Freshness of {model_name}.{field_name} < {threshold}",
         model=model_name,
         field=field_name,
@@ -1086,7 +1108,7 @@ def to_servicelevel_retention_check(data_contract: OpenDataContractStandard, sla
         id=str(uuid.uuid4()),
         key=check_key,
         category="servicelevel",
-        type=check_type,
+        type=check_type.value,
         name=f"Retention of {model_name}.{field_name} < {seconds}s",
         model=model_name,
         field=field_name,

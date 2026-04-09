@@ -198,7 +198,7 @@ def test(
     enable_debug_logging(debug)
 
     console.print(f"Testing {location}")
-    if checks is None or len(checks) == 0:
+    if checks is None or len(checks) == 0 or CheckTypeGroup.all.value in checks:
         checks = [CheckTypeGroup.all]
     if server == "all":
         server = None
