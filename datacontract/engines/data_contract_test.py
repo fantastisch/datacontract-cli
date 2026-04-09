@@ -2,11 +2,12 @@ import atexit
 import os
 import tempfile
 import typing
+from typing import List
 
 import requests
 from open_data_contract_standard.model import OpenDataContractStandard, Server
 
-from datacontract.engines.data_contract_checks import create_checks
+from datacontract.engines.data_contract_checks import create_checks, CheckTypeGroup
 
 if typing.TYPE_CHECKING:
     from duckdb.duckdb import DuckDBPyConnection
@@ -24,7 +25,7 @@ from datacontract.model.run import ResultEnum, Run
 def execute_data_contract_test(
     data_contract: OpenDataContractStandard,
     run: Run,
-    check_types: str = None,
+    check_type_groups: List[CheckTypeGroup] = None,
     server_name: str = None,
     spark: "SparkSession" = None,
     duckdb_connection: "DuckDBPyConnection" = None,
@@ -40,7 +41,7 @@ def execute_data_contract_test(
     if server_name is None and data_contract.servers is not None and len(data_contract.servers) > 0:
         server_name = data_contract.servers[0].server
     server = get_server(data_contract, server_name)
-    run.log_info(f"Running {check_types} tests for data contract {data_contract.id} with server {server_name}")
+    run.log_info(f"Running {check_type_groups} tests for data contract {data_contract.id} with server {server_name}")
     run.dataContractId = data_contract.id
     run.dataContractVersion = data_contract.version
     run.dataProductId = data_contract.dataProduct

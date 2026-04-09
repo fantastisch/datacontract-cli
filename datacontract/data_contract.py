@@ -115,6 +115,7 @@ class DataContract:
 
     def test(self) -> Run:
         run = Run.create_run()
+
         try:
             run.log_info("Testing data contract")
             data_contract = resolve.resolve_data_contract(
